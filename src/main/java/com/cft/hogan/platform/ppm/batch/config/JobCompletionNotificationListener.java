@@ -10,7 +10,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListenerSupport;
 import org.springframework.stereotype.Component;
 
-import com.cft.hogan.platform.ppm.batch.context.PropertyContext;
+import com.cft.hogan.platform.ppm.batch.context.SystemContext;
 
 @Component
 public class JobCompletionNotificationListener extends JobExecutionListenerSupport {
@@ -22,13 +22,17 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
 	public void afterJob(JobExecution jobExecution) {
 		if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
 			log.info("!!! JOB FINISHED!");
+			SystemContext.logDetails();
 			log.info("==============================================================================");
 			log.info("**********************************JOB REPORT**********************************");
 			log.info("==============================================================================");
-			PropertyContext.logDetails();
-			report.forEach(msg->{
-				log.info(msg.toString());
-			});
+			if(report.size()>0) {
+				report.forEach(msg->{
+					log.info(msg.toString());
+				});
+			}else {
+				log.info("NO TASK HAS BEEN PROCESSED");
+			}
 			log.info("==============================================================================");
 			log.info("*************************************END**************************************");
 			log.info("==============================================================================");

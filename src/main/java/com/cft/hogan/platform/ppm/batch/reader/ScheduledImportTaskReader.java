@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.cft.hogan.platform.ppm.batch.bean.ScheduleBatchBean;
-import com.cft.hogan.platform.ppm.batch.context.PropertyContext;
+import com.cft.hogan.platform.ppm.batch.context.SystemContext;
 import com.cft.hogan.platform.ppm.batch.exception.BusinessException;
 import com.cft.hogan.platform.ppm.batch.util.Utils;
 
@@ -39,10 +39,10 @@ public  class ScheduledImportTaskReader implements ItemReader<ScheduleBatchBean>
 	}
 
 	private void getScheduledImportTasks() {
-		StringBuffer uri = new StringBuffer(PropertyContext.restURI.getProperty("schedule.uri")+"/batch");
+		StringBuffer uri = new StringBuffer(SystemContext.restURI.getProperty("schedule.uri")+"/batch");
 
-		if(PropertyContext.bpDate != null) {
-			uri.append("?bp-date=").append(PropertyContext.bpDate);
+		if(SystemContext.bpDate != null) {
+			uri.append("?bp-date=").append(SystemContext.bpDate);
 			uri.append("&type=").append("Import");
 		}else {
 			uri.append("?type=").append("Import");
@@ -58,7 +58,7 @@ public  class ScheduledImportTaskReader implements ItemReader<ScheduleBatchBean>
 			importTasks = Arrays.asList(response.getBody());
 		}catch(Exception e) {
 			new BusinessException("Error getting the Scheduled Export tasks. Proceeding with batch.");
-			log.error("Job Parameters :--region :"+PropertyContext.region+"  --BP Date :"+PropertyContext.bpDate);
+			log.error("URI:"+uri.toString());
 			log.error(e.getMessage(), e);
 		}
 	}

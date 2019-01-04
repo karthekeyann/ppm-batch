@@ -10,7 +10,7 @@ import java.util.Date;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
 
-import com.cft.hogan.platform.ppm.batch.context.PropertyContext;
+import com.cft.hogan.platform.ppm.batch.context.SystemContext;
 import com.cft.hogan.platform.ppm.batch.exception.BusinessException;
 import com.cft.hogan.platform.ppm.batch.exception.SystemException;
 
@@ -38,14 +38,14 @@ public class Utils {
 	
 	public static HttpHeaders getHeader(String user) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("X-region", PropertyContext.region);
+		headers.set("X-region", SystemContext.region);
 		headers.set("X-user", user);
 		headers.set("Authorization", getAuth());
 		return headers;
 	}
 	
 	private static String getAuth() {
-		 String auth = PropertyContext.restURI.getProperty("ppm.batch.user") + ":" + PropertyContext.restURI.getProperty("ppm.batch.password");
+		 String auth = SystemContext.restURI.getProperty("ppm.batch.user") + ":" + SystemContext.restURI.getProperty("ppm.batch.password");
          byte[] encodedAuth = Base64.encodeBase64(
         		 auth.getBytes(Charset.forName("US-ASCII")) );
          String authHeader = "Basic " + new String( encodedAuth );
@@ -55,7 +55,7 @@ public class Utils {
 	
 	public static void handleException(Exception e) {
 		StringBuffer msg = new StringBuffer();
-		msg.append(" --Region :").append(PropertyContext.region).append(e.getMessage());
+		msg.append(" --Region :").append(SystemContext.region).append(e.getMessage());
 		log.error(msg.toString(), e);
 		if(e instanceof BusinessException) {
 			//DO NOTHING

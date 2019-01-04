@@ -25,7 +25,7 @@ import com.cft.hogan.platform.ppm.batch.bean.ExportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ImportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ScheduleBatchBean;
 import com.cft.hogan.platform.ppm.batch.config.JobCompletionNotificationListener;
-import com.cft.hogan.platform.ppm.batch.context.PropertyContext;
+import com.cft.hogan.platform.ppm.batch.context.SystemContext;
 import com.cft.hogan.platform.ppm.batch.exception.SystemException;
 import com.cft.hogan.platform.ppm.batch.util.Constants;
 import com.cft.hogan.platform.ppm.batch.util.Utils;
@@ -40,14 +40,14 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 			LOGGER.info("Processing Task ID:"+task.getUuid()+" --Name:"+task.getName()+" --Type:"+task.getType());
 			msg = new StringBuffer();
 			JobCompletionNotificationListener.report.add(msg);
-			msg.append("BATCH TaskID :").append(task.getUuid());
+			msg.append("TaskID:").append(task.getUuid());
 			if(task.getType().equalsIgnoreCase("import")){
 				try {
 					importTask(task);
 					task.setTemplateUUID(null);
 					updateSchedule(task);
 				} catch (Exception e) {
-					msg.append("	IMPORT Task --Result: FAILED	--");
+					msg.append("	--Type:IMPORT	--Result:FAILED");
 					LOGGER.error(e.getMessage(), e);
 				}
 			}else {
@@ -55,18 +55,19 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 					exportTask(task);
 					updateSchedule(task);
 				} catch (Exception e) {
-					msg.append("	EXPORT Task --Result: FAILED	--");
+					msg.append("	--Type:EXPORT	--Result:FAILED");
 					LOGGER.error(e.getMessage(), e);
 				}
 			}
-			msg.append(" Name :").append(task.getName());
+			msg.append(" --Frequency:").append(task.getFrequency())
+			.append("	--Name:").append(task.getName());
 		});
 	}
 
 
 	private void importTask(ScheduleBatchBean bean) {
 		StringBuffer uri = new StringBuffer();
-		uri.append(PropertyContext.restURI.getProperty("import.uri")).
+		uri.append(SystemContext.restURI.getProperty("import.uri")).
 		append("?taskType=batch&taskName=").
 		append(bean.getName()).
 		append("-BATCH");
@@ -88,10 +89,11 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		ResponseEntity<ImportTaskBean> result = restTemplate.postForEntity(uri.toString(), requestEntity, ImportTaskBean.class);
 
 		if(Constants.COMPLETE.equalsIgnoreCase(result.getBody().getStatus())) {
-			msg.append("	IMPORT Task --Result: SUCCESSFUL	--");
+			msg.append("	--Type:IMPORT	--Result:SUCCESSFUL");
 			LOGGER.info("PCD Imported successfully. ImportTask ID :"+result.getBody().getUuid() +" Name :"+result.getBody().getName()+" Status :"+result.getBody().getStatus());
 		}else {
-			msg.append("	IMPORT Task --Result: 	PROCESSED WITH ERRORS	--");
+			msg.append("	--Type:IMPORT	--Result:PROCESSED WITH ERRORS");
+			LOGGER.info("URI:"+uri.toString());
 			LOGGER.info("PCD Imported created with errors. ImportTask ID :"+result.getBody().getUuid() +" Name :"+result.getBody().getName()+" Status :"+result.getBody().getStatus());
 		}
 	}
@@ -116,7 +118,7 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		ExportTaskBean input = new ExportTaskBean();
 		input.setPsets(bean.getTemplate().getPsets());
 		input.setSingleTab(bean.isSingleTab());
-		String uri = PropertyContext.restURI.getProperty("export.uri");
+		String uri = SystemContext.restURI.getProperty("export.uri");
 		RestTemplate restTemplate = new RestTemplate();
 		
 		HttpHeaders headers =Utils.getHeader(bean.getCreatedBy());
@@ -131,18 +133,18 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 			inputStream.close();
 			workbook.close();
 			outputStream.close();
-			msg.append("	EXPORT Task --Result:	SUCCESSFUL	--");
+			msg.append("	--Type:EXPORT	--Result:SUCCESSFUL");
 		}else {
-			msg.append("	EXPORT Task --Result: 	PROCESSED WITH ERRORS	--");
+			msg.append("	--Type:EXPORT	--Result:PROCESSED WITH ERRORS");
 		}
 
 	}
 
 	private void updateSchedule(ScheduleBatchBean task) throws Exception {
+		StringBuffer url = new StringBuffer();
 		try {
 		if("ONLY ONCE".equalsIgnoreCase(task.getFrequency())) {
-			StringBuffer url = new StringBuffer();
-			url.append(PropertyContext.restURI.getProperty("schedule.uri")).append("/").append(task.getUuid());
+			url.append(SystemContext.restURI.getProperty("schedule.uri")).append("/").append(task.getUuid());
 			RestTemplate restTemplate = new RestTemplate();
 
 			HttpHeaders headers =Utils.getHeader(task.getCreatedBy());
@@ -158,7 +160,8 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		}
 		}catch (Exception e) {
 			msg.append("--ERROR OCCURED WHILE SCHEDULE TASK STATUS UPDATE--");
-			throw new Exception(e);
+			LOGGER.info("URI:"+url.toString());
+			Utils.handleException(e);
 		}
 	}
 }
