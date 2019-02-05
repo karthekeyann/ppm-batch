@@ -1,13 +1,9 @@
 package com.cft.hogan.platform.ppm.batch.context;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
-import java.util.Properties;
 
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import com.cft.hogan.platform.ppm.batch.exception.BusinessException;
@@ -19,24 +15,22 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public class SystemContext {
+public class EnvironmentContext {
 
 	public static  Date bpDate = null;
 	public static String region = null;
-	public static String environment = null;
-	public static Properties restURI = null;
+	public static Environment env = null;
 
 
 	public static void initilizeSystemContext(String[] args) {
-		if(args.length>1) {
-			environment = args[0];
-			region = args[1];
+		if(args.length>0) {
+			region = args[0];
 			if(region==null || StringUtils.isEmpty(region) || 
 					!(region.equalsIgnoreCase(Constants.REGION_COR) || region.equalsIgnoreCase(Constants.REGION_TDA) || 
 							region.equalsIgnoreCase(Constants.REGION_PASCOR) || region.equalsIgnoreCase(Constants.REGION_PASTDA))) {
 				throw new SystemException("Invalid region :"+region);
 			}
-			if(args.length>2) {
+			if(args.length>1) {
 				try {
 					bpDate = Utils.convertStringToSQLDate(args[2]);
 				} catch (ParseException e) {
@@ -51,39 +45,32 @@ public class SystemContext {
 		}
 	}
 
-	public static void readRESTURI() throws IOException {
-		restURI = new Properties();
-		File file = null;
-		if(environment.equalsIgnoreCase(Constants.ENV_TEST)) {
-			file = new File(Constants.PPM_REST_URI_TEST);
-		}else if(environment.equalsIgnoreCase(Constants.ENV_QA)) {
-			file = new File(Constants.PPM_REST_URI_QA);
-		}else if(environment.equalsIgnoreCase(Constants.ENV_PROD)) {
-			file = new File(Constants.PPM_REST_URI_PROD);
-		}
-		if(file.exists()) {
-			BufferedReader inputStream = new BufferedReader(new FileReader(file));
-			try {
-				restURI.load(inputStream);
-			}
-			finally {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-		}else {
-			throw new SystemException("REST Service URI properties file does not exists: "+file.getAbsolutePath());
-		}
-	}
-
-
 	public static void logDetails() {
-		log.info("Environment :"+environment);
+		log.info("Environment :"+env.getActiveProfiles()[0]);
 		log.info("BP Date :"+bpDate);
 		log.info("Region :"+region);
-		restURI.forEach((key, value)->{
-			log.info(key+":"+value);
-		});
+		log.info("Region :"+getImportApiURI());
+		log.info("Region :"+getExportApiURI() );
+		log.info("Region :"+getScheduleApiURI());
 	}
 
+	public static String getImportApiURI() {
+		return env.getProperty("import.api.uri");
+	}
+
+	public static String getExportApiURI() {
+		return env.getProperty("export.api.uri");
+	}
+
+	public static String getScheduleApiURI() {
+		return env.getProperty("schedule.api.uri");
+	}
+
+	public static String getBatchUserId() {
+		return env.getProperty("ppm.batch.user");
+	}
+
+	public static String getBatchPassword() {
+		return env.getProperty("ppm.batch.password");
+	}
 }

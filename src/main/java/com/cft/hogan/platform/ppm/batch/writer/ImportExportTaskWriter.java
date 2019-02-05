@@ -24,8 +24,8 @@ import org.springframework.web.client.RestTemplate;
 import com.cft.hogan.platform.ppm.batch.bean.ExportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ImportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ScheduleBatchBean;
-import com.cft.hogan.platform.ppm.batch.config.JobCompletionNotificationListener;
-import com.cft.hogan.platform.ppm.batch.context.SystemContext;
+import com.cft.hogan.platform.ppm.batch.config.JobListener;
+import com.cft.hogan.platform.ppm.batch.context.EnvironmentContext;
 import com.cft.hogan.platform.ppm.batch.exception.SystemException;
 import com.cft.hogan.platform.ppm.batch.util.Constants;
 import com.cft.hogan.platform.ppm.batch.util.Utils;
@@ -34,12 +34,14 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImportExportTaskWriter.class);
 	StringBuffer msg = null;
+
 	@Override
 	public void write(List<? extends ScheduleBatchBean> items) throws Exception {
+
 		items.forEach(task -> {
 			LOGGER.info("Processing Task ID:"+task.getUuid()+" --Name:"+task.getName()+" --Type:"+task.getType());
 			msg = new StringBuffer();
-			JobCompletionNotificationListener.report.add(msg);
+			JobListener.report.add(msg);
 			msg.append("TaskID:").append(task.getUuid());
 			if(task.getType().equalsIgnoreCase("import")){
 				try {
@@ -66,8 +68,9 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 
 
 	private void importTask(ScheduleBatchBean bean) {
+
 		StringBuffer uri = new StringBuffer();
-		uri.append(SystemContext.restURI.getProperty("import.uri")).
+		uri.append(EnvironmentContext.getImportApiURI()).
 		append("?taskType=batch&taskName=").
 		append(bean.getName()).
 		append("-BATCH");
@@ -118,11 +121,11 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		ExportTaskBean input = new ExportTaskBean();
 		input.setPsets(bean.getTemplate().getPsets());
 		input.setSingleTab(bean.isSingleTab());
-		String uri = SystemContext.restURI.getProperty("export.uri");
+		String uri = EnvironmentContext.getExportApiURI();
 		RestTemplate restTemplate = new RestTemplate();
-		
+
 		HttpHeaders headers =Utils.getHeader(bean.getCreatedBy());
-		
+
 		HttpEntity<ExportTaskBean> requestEntity	 = new HttpEntity<ExportTaskBean>(input, headers);
 		ResponseEntity<byte[]> result = restTemplate.postForEntity(uri, requestEntity, byte[].class);
 		if(result!=null && result.getStatusCodeValue() == 200 && result.getBody()!=null && result.getBody().length>0)
@@ -140,24 +143,26 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 
 	}
 
+
 	private void updateSchedule(ScheduleBatchBean task) throws Exception {
+
 		StringBuffer url = new StringBuffer();
 		try {
-		if("ONLY ONCE".equalsIgnoreCase(task.getFrequency())) {
-			url.append(SystemContext.restURI.getProperty("schedule.uri")).append("/").append(task.getUuid());
-			RestTemplate restTemplate = new RestTemplate();
+			if("ONLY ONCE".equalsIgnoreCase(task.getFrequency())) {
+				url.append(EnvironmentContext.getScheduleApiURI()).append("/").append(task.getUuid());
+				RestTemplate restTemplate = new RestTemplate();
 
-			HttpHeaders headers =Utils.getHeader(task.getCreatedBy());
+				HttpHeaders headers =Utils.getHeader(task.getCreatedBy());
 
-			task.setStatus("InActive");
-			task.setRemarks("Task with frequency ONLY ONCE processed by batch and status set to in-active");
+				task.setStatus("InActive");
+				task.setRemarks("Task with frequency ONLY ONCE processed by batch and status set to in-active");
 
-			HttpEntity<ScheduleBatchBean> requestEntity	 = new HttpEntity<ScheduleBatchBean>(task, headers);
-			ResponseEntity<ScheduleBatchBean> result = restTemplate.exchange(url.toString(), HttpMethod.PUT, requestEntity, ScheduleBatchBean.class);
-			if(result.getStatusCode()==HttpStatus.OK) {
-				LOGGER.info("(ONLY ONCE)Schedule task status set to in active after process.");
+				HttpEntity<ScheduleBatchBean> requestEntity	 = new HttpEntity<ScheduleBatchBean>(task, headers);
+				ResponseEntity<ScheduleBatchBean> result = restTemplate.exchange(url.toString(), HttpMethod.PUT, requestEntity, ScheduleBatchBean.class);
+				if(result.getStatusCode()==HttpStatus.OK) {
+					LOGGER.info("(ONLY ONCE)Schedule task status set to in active after process.");
+				}
 			}
-		}
 		}catch (Exception e) {
 			msg.append("--ERROR OCCURED WHILE SCHEDULE TASK STATUS UPDATE--");
 			LOGGER.info("URI:"+url.toString());

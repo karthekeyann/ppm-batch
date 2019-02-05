@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.cft.hogan.platform.ppm.batch.bean.ScheduleBatchBean;
 import com.cft.hogan.platform.ppm.batch.processor.ImportExportTaskProcessor;
-import com.cft.hogan.platform.ppm.batch.reader.ScheduledExportTaskReader;
-import com.cft.hogan.platform.ppm.batch.reader.ScheduledImportTaskReader;
+import com.cft.hogan.platform.ppm.batch.reader.ExportTaskReader;
+import com.cft.hogan.platform.ppm.batch.reader.ImportTaskReader;
 import com.cft.hogan.platform.ppm.batch.writer.ImportExportTaskWriter;
 
 
@@ -31,12 +31,12 @@ public class BatchConfiguration {
 
     @Bean
     public ItemReader<ScheduleBatchBean> importTaskReader() {
-        return new ScheduledImportTaskReader();
+        return new ImportTaskReader();
     }
     
     @Bean
     public ItemReader<ScheduleBatchBean> exportTaskReader() {
-        return new ScheduledExportTaskReader();
+        return new ExportTaskReader();
     }
     
     @Bean
@@ -51,12 +51,11 @@ public class BatchConfiguration {
     }
     
     @Bean
-    public Job massMaintenanceJob(JobCompletionNotificationListener listener, Step importStep, Step exportStep) {
+    public Job massMaintenanceJob(JobListener listener, Step importStep, Step exportStep) {
         return jobBuilderFactory.get("massMaintenanceJob")
             .incrementer(new RunIdIncrementer())
             .listener(listener)
             .flow(importStep)
-//            .flow(exportStep)
             .next(exportStep)
             .end()
             .build();
