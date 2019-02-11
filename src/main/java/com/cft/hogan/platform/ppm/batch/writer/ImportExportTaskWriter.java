@@ -25,8 +25,9 @@ import com.cft.hogan.platform.ppm.batch.bean.ExportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ImportTaskBean;
 import com.cft.hogan.platform.ppm.batch.bean.ScheduleBatchBean;
 import com.cft.hogan.platform.ppm.batch.config.JobListener;
-import com.cft.hogan.platform.ppm.batch.context.EnvironmentContext;
-import com.cft.hogan.platform.ppm.batch.exception.SystemException;
+import com.cft.hogan.platform.ppm.batch.context.BatchContext;
+import com.cft.hogan.platform.ppm.batch.exception.ExceptionHandler;
+import com.cft.hogan.platform.ppm.batch.exception.SystemError;
 import com.cft.hogan.platform.ppm.batch.util.Constants;
 import com.cft.hogan.platform.ppm.batch.util.Utils;
 
@@ -70,14 +71,14 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 	private void importTask(ScheduleBatchBean bean) {
 
 		StringBuffer uri = new StringBuffer();
-		uri.append(EnvironmentContext.getImportApiURI()).
+		uri.append(BatchContext.getImportApiURI()).
 		append("?taskType=batch&taskName=").
 		append(bean.getName()).
 		append("-BATCH");
 		RestTemplate restTemplate = new RestTemplate();
 		File file = new File(bean.getFilePath());
 		if(!file.exists()) {
-			throw new SystemException("Invalid input file :"+bean.getFilePath());
+			throw new SystemError("Invalid input file :"+bean.getFilePath());
 		}
 		HttpHeaders headers =Utils.getHeader(bean.getCreatedBy());
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -107,7 +108,7 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		String filename = bean.getFilePath();
 		File file = new File(filename);
 		if(!filename.endsWith(".xls")) {
-			throw new SystemException("Invalid File location/format."+filename);
+			throw new SystemError("Invalid File location/format."+filename);
 		}
 
 		int count = 1;
@@ -121,7 +122,7 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		ExportTaskBean input = new ExportTaskBean();
 		input.setPsets(bean.getTemplate().getPsets());
 		input.setSingleTab(bean.isSingleTab());
-		String uri = EnvironmentContext.getExportApiURI();
+		String uri = BatchContext.getExportApiURI();
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers =Utils.getHeader(bean.getCreatedBy());
@@ -149,7 +150,7 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		StringBuffer url = new StringBuffer();
 		try {
 			if("ONLY ONCE".equalsIgnoreCase(task.getFrequency())) {
-				url.append(EnvironmentContext.getScheduleApiURI()).append("/").append(task.getUuid());
+				url.append(BatchContext.getScheduleApiURI()).append("/").append(task.getUuid());
 				RestTemplate restTemplate = new RestTemplate();
 
 				HttpHeaders headers =Utils.getHeader(task.getCreatedBy());
@@ -166,7 +167,7 @@ public class ImportExportTaskWriter implements ItemWriter<ScheduleBatchBean> {
 		}catch (Exception e) {
 			msg.append("--ERROR OCCURED WHILE SCHEDULE TASK STATUS UPDATE--");
 			LOGGER.info("URI:"+url.toString());
-			Utils.handleException(e);
+			ExceptionHandler.handleException(e);
 		}
 	}
 }

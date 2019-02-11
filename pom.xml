@@ -6,8 +6,7 @@
     <groupId>com.cft.hogan.platform</groupId>
     <artifactId>ppm-batch</artifactId>
     <version>1.0</version>
-    <!-- <packaging>war</packaging>
-     -->
+    <!-- <packaging>war</packaging> -->
     <name>ppm-batch</name>
 
     <parent>

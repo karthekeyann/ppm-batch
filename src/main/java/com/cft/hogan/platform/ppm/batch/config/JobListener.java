@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import com.cft.hogan.platform.ppm.batch.context.EnvironmentContext;
+import com.cft.hogan.platform.ppm.batch.context.BatchContext;
 
 @Component
 public class JobListener extends JobExecutionListenerSupport {
@@ -26,7 +26,7 @@ public class JobListener extends JobExecutionListenerSupport {
 	@Override
 	public void beforeJob(JobExecution jobExecution) {
 		super.beforeJob(jobExecution);
-		EnvironmentContext.env = env;
+		BatchContext.env = env;
 	}
 	
 	
@@ -34,7 +34,7 @@ public class JobListener extends JobExecutionListenerSupport {
 	public void afterJob(JobExecution jobExecution) {
 		if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
 			log.info("!!! JOB FINISHED!");
-			EnvironmentContext.logDetails();
+			BatchContext.logDetails();
 			log.info("==============================================================================");
 			log.info("**********************************JOB REPORT**********************************");
 			log.info("==============================================================================");

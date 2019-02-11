@@ -6,8 +6,8 @@ import java.text.ParseException;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-import com.cft.hogan.platform.ppm.batch.exception.BusinessException;
-import com.cft.hogan.platform.ppm.batch.exception.SystemException;
+import com.cft.hogan.platform.ppm.batch.exception.BusinessError;
+import com.cft.hogan.platform.ppm.batch.exception.SystemError;
 import com.cft.hogan.platform.ppm.batch.util.Constants;
 import com.cft.hogan.platform.ppm.batch.util.Utils;
 
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public class EnvironmentContext {
+public class BatchContext {
 
 	public static  Date bpDate = null;
 	public static String region = null;
@@ -28,20 +28,20 @@ public class EnvironmentContext {
 			if(region==null || StringUtils.isEmpty(region) || 
 					!(region.equalsIgnoreCase(Constants.REGION_COR) || region.equalsIgnoreCase(Constants.REGION_TDA) || 
 							region.equalsIgnoreCase(Constants.REGION_PASCOR) || region.equalsIgnoreCase(Constants.REGION_PASTDA))) {
-				throw new SystemException("Invalid region :"+region);
+				throw new SystemError("Invalid region :"+region);
 			}
 			if(args.length>1) {
 				try {
 					bpDate = Utils.convertStringToSQLDate(args[2]);
 				} catch (ParseException e) {
 					bpDate = Utils.getCurrentDate();
-					new BusinessException("Invalid BP date. Proceeding the batch with current system date :"+bpDate);
+					new BusinessError("Invalid BP date. Proceeding the batch with current system date :"+bpDate);
 				}
 			}else {
 				bpDate = Utils.getCurrentDate();
 			}
 		}else {
-			throw new SystemException("Invalid environment and region");
+			throw new SystemError("Invalid environment and region");
 		}
 	}
 

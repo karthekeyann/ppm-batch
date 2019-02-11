@@ -10,13 +10,8 @@ import java.util.Date;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
 
-import com.cft.hogan.platform.ppm.batch.context.EnvironmentContext;
-import com.cft.hogan.platform.ppm.batch.exception.BusinessException;
-import com.cft.hogan.platform.ppm.batch.exception.SystemException;
+import com.cft.hogan.platform.ppm.batch.context.BatchContext;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class Utils {
 
 	public static java.sql.Date convertStringToSQLDate(String str_date) throws ParseException {
@@ -38,29 +33,17 @@ public class Utils {
 	
 	public static HttpHeaders getHeader(String user) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("X-region", EnvironmentContext.region);
+		headers.set("X-region", BatchContext.region);
 		headers.set("X-user", user);
 		headers.set("Authorization", getAuth());
 		return headers;
 	}
 	
 	private static String getAuth() {
-		 String auth = EnvironmentContext.getBatchUserId() + ":" + EnvironmentContext.getBatchPassword();
+		 String auth = BatchContext.getBatchUserId() + ":" + BatchContext.getBatchPassword();
          byte[] encodedAuth = Base64.encodeBase64(
         		 auth.getBytes(Charset.forName("US-ASCII")) );
          String authHeader = "Basic " + new String( encodedAuth );
          return authHeader;
-	}
-	
-	
-	public static void handleException(Exception e) {
-		StringBuffer msg = new StringBuffer();
-		msg.append(" --Region :").append(EnvironmentContext.region).append(e.getMessage());
-		log.error(msg.toString(), e);
-		if(e instanceof BusinessException) {
-			//DO NOTHING
-		}else {
-			throw new SystemException();
-		}
 	}
 }
