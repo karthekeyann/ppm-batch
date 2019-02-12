@@ -33,7 +33,7 @@ public class Utils {
 	
 	public static HttpHeaders getHeader(String user) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("X-region", BatchContext.region);
+		headers.set("X-region", BatchContext.getRegion());
 		headers.set("X-user", user);
 		headers.set("Authorization", getAuth());
 		return headers;

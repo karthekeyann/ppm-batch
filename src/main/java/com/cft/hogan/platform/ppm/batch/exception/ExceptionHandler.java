@@ -10,7 +10,7 @@ public class ExceptionHandler {
 
 	public static void handleException(Exception e) {
 		StringBuffer msg = new StringBuffer();
-		msg.append(" --Region :").append(BatchContext.region).append(e.getMessage());
+		msg.append(" --Region :").append(BatchContext.getRegion()).append(e.getMessage());
 		log.error(msg.toString(), e);
 		if(e instanceof BusinessError) {
 			//DO NOTHING

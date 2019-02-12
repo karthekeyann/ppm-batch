@@ -17,41 +17,51 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchContext {
 
-	public static  Date bpDate = null;
-	public static String region = null;
-	public static Environment env = null;
+	private static  Date bpDate = null;
+	private static String region = null;
+	private static Environment env = null;
 
+	public static void setRegion(String param) {
+		region = param;
+		if(region==null || StringUtils.isEmpty(region) || 
+				!(region.equalsIgnoreCase(Constants.REGION_COR) || region.equalsIgnoreCase(Constants.REGION_TDA) || 
+						region.equalsIgnoreCase(Constants.REGION_PASCOR) || region.equalsIgnoreCase(Constants.REGION_PASTDA))) {
+			throw new SystemError("Invalid region :"+region);
+		}
+	}
+	
+	public static String getRegion() {
+		return region;
+	}
 
-	public static void initilizeSystemContext(String[] args) {
-		if(args.length>0) {
-			region = args[0];
-			if(region==null || StringUtils.isEmpty(region) || 
-					!(region.equalsIgnoreCase(Constants.REGION_COR) || region.equalsIgnoreCase(Constants.REGION_TDA) || 
-							region.equalsIgnoreCase(Constants.REGION_PASCOR) || region.equalsIgnoreCase(Constants.REGION_PASTDA))) {
-				throw new SystemError("Invalid region :"+region);
-			}
-			if(args.length>1) {
-				try {
-					bpDate = Utils.convertStringToSQLDate(args[2]);
-				} catch (ParseException e) {
-					bpDate = Utils.getCurrentDate();
-					new BusinessError("Invalid BP date. Proceeding the batch with current system date :"+bpDate);
-				}
-			}else {
+	public static void setEnv(Environment lEnv) {
+		env = lEnv;
+	}
+
+	public static void setBpDate(String param) {
+		if(param == null) {
+			try {
+				bpDate = Utils.convertStringToSQLDate(param);
+			} catch (ParseException e) {
 				bpDate = Utils.getCurrentDate();
+				new BusinessError("Invalid BP date param."+param+" .Proceeding the batch with current system date :"+bpDate);
 			}
 		}else {
-			throw new SystemError("Invalid environment and region");
+			bpDate = Utils.getCurrentDate();
 		}
+	}
+	
+	public static Date getBpDate() {
+		return bpDate;
 	}
 
 	public static void logDetails() {
 		log.info("Environment :"+env.getActiveProfiles()[0]);
 		log.info("BP Date :"+bpDate);
 		log.info("Region :"+region);
-		log.info("Region :"+getImportApiURI());
-		log.info("Region :"+getExportApiURI() );
-		log.info("Region :"+getScheduleApiURI());
+		log.info("URI :"+getImportApiURI());
+		log.info("URI :"+getExportApiURI() );
+		log.info("URI :"+getScheduleApiURI());
 	}
 
 	public static String getImportApiURI() {

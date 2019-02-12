@@ -41,8 +41,8 @@ public  class ImportTaskReader implements ItemReader<ScheduleBatchBean> {
 	private void getScheduledImportTasks() {
 		StringBuffer uri = new StringBuffer(BatchContext.getScheduleApiURI()+"/batch");
 
-		if(BatchContext.bpDate != null) {
-			uri.append("?bp-date=").append(BatchContext.bpDate);
+		if(BatchContext.getBpDate() != null) {
+			uri.append("?bp-date=").append(BatchContext.getBpDate());
 			uri.append("&type=").append("Import");
 		}else {
 			uri.append("?type=").append("Import");
