@@ -3,17 +3,10 @@ package com.cft.hogan.platform.ppm.batch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.cft.hogan.platform.ppm.batch.exception.ExceptionHandler;
-
 @SpringBootApplication
 public class Application {
 
 	public static void main(String[] args) {
-
-		try {
-			SpringApplication.run(Application.class, args);
-		}catch(Exception e) {
-			ExceptionHandler.handleException(e);
-		}
-	}
+        SpringApplication.run(Application.class, args);
+        }
 }

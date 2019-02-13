@@ -5,6 +5,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,25 +50,17 @@ public class BatchConfiguration {
         return new ImportExportTaskWriter();
     }
     
-//    @Bean
-//    public Job massMaintenanceJob(JobListener listener, Step importStep, Step exportStep) {
-//        return jobBuilderFactory.get("massMaintenanceJob")
-//            .incrementer(new RunIdIncrementer())
-//            .listener(listener)
-//            .flow(importStep)
-//            .next(exportStep)
-//            .end()
-//            .build();
-//    }
-    
     @Bean
     public Job massMaintenanceJob(JobListener listener, Step importStep, Step exportStep) {
         return jobBuilderFactory.get("massMaintenanceJob")
+            .incrementer(new RunIdIncrementer())
             .listener(listener)
-            .start(importStep)
-            .next(exportStep)
+            .flow(importStep)
+//            .next(exportStep)
+            .end()
             .build();
     }
+    
 
     @Bean
     public Step importStep(ItemWriter<ScheduleBatchBean> writer) {

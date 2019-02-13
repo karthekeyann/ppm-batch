@@ -1,7 +1,6 @@
 package com.cft.hogan.platform.ppm.batch.context;
 
 import java.sql.Date;
-import java.text.ParseException;
 
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
@@ -42,7 +41,7 @@ public class BatchContext {
 		if(param == null) {
 			try {
 				bpDate = Utils.convertStringToSQLDate(param);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				bpDate = Utils.getCurrentDate();
 				new BusinessError("Invalid BP date param."+param+" .Proceeding the batch with current system date :"+bpDate);
 			}

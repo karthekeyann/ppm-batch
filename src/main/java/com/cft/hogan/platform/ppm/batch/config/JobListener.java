@@ -20,7 +20,7 @@ public class JobListener extends JobExecutionListenerSupport {
 
 	private static final Logger log = LoggerFactory.getLogger(JobListener.class);
 	public static List<StringBuffer> report = new ArrayList<StringBuffer>();
-	
+
 	@Autowired
 	Environment env;
 
@@ -30,10 +30,10 @@ public class JobListener extends JobExecutionListenerSupport {
 		JobParameters params = jobExecution.getJobParameters();
 		BatchContext.setEnv(env);
 		BatchContext.setRegion(params.getString("region"));
-		BatchContext.setRegion(params.getString("bpdate"));
+		BatchContext.setBpDate(params.getString("bpdate"));
 	}
-	
-	
+
+
 	@Override
 	public void afterJob(JobExecution jobExecution) {
 		if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
