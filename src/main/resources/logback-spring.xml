@@ -39,7 +39,7 @@
 	</root>
 
 	<!-- Log everything at the TRACE level -->
-	<logger name="com.cft.hogan.platform.ppm.batch" level="debug"
+	<logger name="com.cft.hogan.platform.ppm" level="debug"
 		additivity="false">
 		<appender-ref ref="CONSOLE" />
 		<appender-ref ref="ROLLINGFILE" />
